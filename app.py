@@ -23,19 +23,20 @@ END_MESSAGE = f"""
 Thanks for completing the quiz, your results are as follows:
 """
 
+
 class Question:
     def __init__(self, question: str, index: int, options: tuple, answer: str) -> None:
         options_dict = {}
-        
+
         self.question = question
         self.index = index
         self.options = [*options, answer]
         random.shuffle(self.options)
         self.answer = self.options.index(answer)
-    
+
     def check_answer(self, answer_index):
         return self.answer == answer_index
-    
+
     def show_question(self):
         question_details = f"""
         Question: {self.question}
@@ -47,7 +48,7 @@ class Question:
         """
 
         print(question_details)
-    
+
     def show_correct_option(self):
         index_to_option = {
             '0': 'a',
@@ -60,6 +61,7 @@ class Question:
             {index_to_option[str(self.answer)]} {self.options[self.answer]}
         """)
 
+
 def load_file(file_name):
     '''
     Loads contents of a json file and returns it as valid Python
@@ -69,6 +71,7 @@ def load_file(file_name):
         content = json.load(f)
 
     return content
+
 
 def dump_to_file(file_name, content, state='WRITE'):
     '''
@@ -84,12 +87,14 @@ def dump_to_file(file_name, content, state='WRITE'):
     with open(file_name, file_state.get(state, file_state['APPEND'])) as f:
         json.dump(content, f)
 
+
 def validate_state(state):
     '''
     Checks if `state` contains questions
     '''
 
     return bool(state['question_order'])
+
 
 def reset_state():
     '''
@@ -103,6 +108,7 @@ def reset_state():
     }
     dump_to_file(STATE_FILE, state)
 
+
 def process_prompt_response(response):
     '''
     Validates response of user to generic prompts
@@ -115,6 +121,7 @@ def process_prompt_response(response):
     }
 
     return ACTIONS.get(response.lower(), ACTIONS['o'])
+
 
 def proceed_prompt():
     '''
@@ -132,6 +139,7 @@ def proceed_prompt():
         else:
             response = True
     action()
+
 
 def get_questions():
     '''
@@ -157,8 +165,9 @@ def get_questions():
         question_indexes = list(range(1, len(loaded_questions) + 1))
         random.shuffle(question_indexes)
         questions = question_indexes[:NUMBER_OF_QUESTIONS]
-    
+
     return questions, structured_questions
+
 
 def load_questions_into_class(questions_index, structured_questions):
     '''
@@ -179,8 +188,9 @@ def load_questions_into_class(questions_index, structured_questions):
             answer=question['correct']
         )
         packaged_questions.append(question_class)
-    
+
     return packaged_questions
+
 
 def process_option(option):
     '''
@@ -190,12 +200,13 @@ def process_option(option):
     allowed_options = ['a', 'b', 'c', 'd']
     index = None
     exists = option.lower() in allowed_options
-    
+
     if exists:
         index = allowed_options.index(option)
 
     return (exists, index)
-   
+
+
 def prompt_question(question: Question) -> bool:
     '''
     Handles asking process of each question
@@ -211,15 +222,16 @@ def prompt_question(question: Question) -> bool:
         print("Invalid option")
         response = input("Enter option: ").strip()
         processed_resonse = process_option(response)
-    
+
     correct = question.check_answer(processed_resonse[1])
     if correct:
         print(CORRECT)
     else:
         print(WRONG)
         question.show_correct_option()
-    
+
     return correct
+
 
 def ask_questions() -> None:
     '''
@@ -238,10 +250,11 @@ def ask_questions() -> None:
         state['current_score'] += int(score)
         dump_to_file(STATE_FILE, state)
         print(f"You have {state['current_score']} points")
-    
+
     print(END_MESSAGE)
     print(f"Score: {score}/{NUMBER_OF_QUESTIONS}")
-    
+
+
 def play_quiz():
     '''
     Initilizes quiz play
@@ -249,6 +262,7 @@ def play_quiz():
 
     proceed_prompt(PROMPT)
     ask_questions()
+
 
 if __name__ == '__main__':
     play_quiz()
